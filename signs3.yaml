@@ -1,0 +1,49 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+
+Parameters:
+  toemail:
+    Type: String
+    Description: to email address
+
+  fromemail:
+    Type: String
+    Description: from email address
+
+  s3bucket:
+    Type: String
+    Description: s3 bucket
+
+  daystoexpiry:
+    Type: String
+    Description: the lifetime of signed url's in days
+
+  s3region:
+    Type: String
+    Description: the region of the s3 bucket (i.e. eu-west-1)
+
+Resources:
+  signs3:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: signs3.handler
+      Runtime: python3.6
+      CodeUri: s3://marek-serverless/sign-s3.zip
+      Description: ''
+      MemorySize: 128
+      Timeout: 10
+      Policies: 
+        - SESCrudPolicy:
+            IdentityName: !Ref fromemail
+        - S3ReadPolicy:
+            BucketName: !Ref s3bucket
+
+      Environment:
+        Variables:
+          days_to_expiry: !Ref daystoexpiry
+          from_email: !Ref fromemail
+          s3_bucket: !Ref s3bucket
+          s3_region: !Ref s3region
+          to_email: !Ref toemail
+      Tracing: Active
